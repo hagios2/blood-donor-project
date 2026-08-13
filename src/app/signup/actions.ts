@@ -48,6 +48,8 @@ export async function signUp(
   });
   if (profileError) return { error: `Profile creation failed: ${profileError.message}` };
 
+  let welcomeMessage = `Welcome to BloodLink, ${name}! You're registered as a ${role}. We'll text you when there's an urgent match near you.`;
+
   if (role === "donor") {
     const bloodType = String(formData.get("blood_type") || "");
     if (!(BLOOD_TYPES as readonly string[]).includes(bloodType)) {
@@ -59,6 +61,19 @@ export async function signUp(
       last_donation_date: null,
     });
     if (donorError) return { error: `Donor profile failed: ${donorError.message}` };
+
+    const { data: matches } = await supabase
+      .from("blood_requests")
+      .select("id")
+      .eq("status", "open")
+      .eq("region", region)
+      .eq("blood_type", bloodType);
+    if (matches && matches.length > 0) {
+      welcomeMessage =
+        matches.length === 1
+          ? `Welcome to BloodLink, ${name}! There's already 1 open request for ${bloodType} blood in your region. Log in to see it.`
+          : `Welcome to BloodLink, ${name}! There are already ${matches.length} open requests for ${bloodType} blood in your region. Log in to see them.`;
+    }
   } else {
     const address = String(formData.get("address") || "").trim();
     if (!address) return { error: "Please enter the hospital address." };
@@ -69,10 +84,7 @@ export async function signUp(
     if (hospitalError) return { error: `Hospital profile failed: ${hospitalError.message}` };
   }
 
-  await sendSms(
-    phone,
-    `Welcome to BloodLink, ${name}! You're registered as a ${role}. We'll text you when there's an urgent match near you.`,
-  );
+  await sendSms(phone, welcomeMessage);
 
   redirect("/dashboard");
 }

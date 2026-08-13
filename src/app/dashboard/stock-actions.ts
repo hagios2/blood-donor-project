@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { BLOOD_TYPES } from "@/lib/constants";
+import { sendSms } from "@/lib/sms";
 
 export type ActionState = { error: string | null };
 
@@ -34,6 +35,38 @@ export async function upsertStock(
     );
   if (error) return { error: error.message };
 
+  if (units > 0) {
+    notifyOfExistingMatchingRequests(supabase, user.id, bloodType);
+  }
+
   revalidatePath("/dashboard");
   return { error: null };
+}
+
+async function notifyOfExistingMatchingRequests(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  hospitalId: string,
+  bloodType: string,
+) {
+  const { data: self } = await supabase
+    .from("profiles")
+    .select("phone, region")
+    .eq("id", hospitalId)
+    .single();
+  if (!self) return;
+
+  const { data: matches } = await supabase
+    .from("blood_requests")
+    .select("id")
+    .eq("status", "open")
+    .eq("region", self.region)
+    .eq("blood_type", bloodType)
+    .neq("hospital_id", hospitalId);
+  if (!matches || matches.length === 0) return;
+
+  const message =
+    matches.length === 1
+      ? `BloodLink: 1 hospital in your region needs ${bloodType} blood, matching stock you just added. Log in to help.`
+      : `BloodLink: ${matches.length} hospitals in your region need ${bloodType} blood, matching stock you just added. Log in to help.`;
+  await sendSms(self.phone, message);
 }
