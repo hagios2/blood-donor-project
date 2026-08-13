@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { sendSms } from "@/lib/sms";
 
 export type ActionState = { error: string | null };
 
@@ -55,8 +56,32 @@ export async function acceptResponse(
   });
   if (error) return { error: error.message };
 
+  notifyResponderAccepted(supabase, responseId);
+
   revalidatePath("/dashboard");
   return { error: null };
+}
+
+type ResponseNotificationInfo = {
+  responder_phone: string | null;
+  responder_name: string;
+  responder_type: "donor" | "hospital";
+  hospital_name: string;
+  blood_type: string;
+  units_offered: number;
+};
+
+async function notifyResponderAccepted(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  responseId: string,
+) {
+  const { data } = await supabase
+    .rpc("get_response_notification_info", { p_response_id: responseId })
+    .single<ResponseNotificationInfo>();
+  if (!data) return;
+
+  const message = `BloodLink: Thank you! Your offer of ${data.units_offered} unit(s) of ${data.blood_type} to ${data.hospital_name} has been accepted.`;
+  await sendSms(data.responder_phone, message);
 }
 
 export async function rejectResponse(

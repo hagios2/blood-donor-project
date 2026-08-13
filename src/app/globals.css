@@ -24,3 +24,29 @@ body {
   color: var(--foreground);
   font-family: var(--font-figtree), Arial, Helvetica, sans-serif;
 }
+
+button:not(:disabled),
+a {
+  cursor: pointer;
+}
+
+button,
+input,
+select,
+textarea,
+a {
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, box-shadow 150ms ease;
+}
+
+:focus-visible {
+  outline: 2px solid #b91c1c;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

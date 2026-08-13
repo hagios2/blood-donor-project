@@ -10,6 +10,8 @@ import {
 } from "./response-actions";
 import { BLOOD_TYPES, URGENCY_LEVELS } from "@/lib/constants";
 import type { BloodRequestRow, PublicProfile, ResponseRow, StockRow } from "./types";
+import { StatusBadge, UrgencyBadge, BloodTypeBadge } from "@/components/Badge";
+import { Droplets, Building2, PlusCircle, Users, MapPinned } from "lucide-react";
 
 export default function HospitalDashboard({
   region,
@@ -36,11 +38,17 @@ export default function HospitalDashboard({
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-10">
-      <section>
-        <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">Hospital</h2>
-        <p className="text-lg font-semibold">
-          {address} <span className="text-gray-400 dark:text-gray-500">· {region}</span>
-        </p>
+      <section className="flex items-center gap-3">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400">
+          <Building2 size={20} />
+        </span>
+        <div>
+          <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">Hospital</h2>
+          <p className="text-lg font-semibold">
+            {address}{" "}
+            <span className="text-gray-400 dark:text-gray-500 font-normal">· {region}</span>
+          </p>
+        </div>
       </section>
 
       <StockSection stock={stock} />
@@ -63,18 +71,40 @@ export default function HospitalDashboard({
   );
 }
 
+function SectionHeading({
+  icon,
+  title,
+  subtitle,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  subtitle?: string;
+}) {
+  return (
+    <div className="mb-4 flex items-start gap-2.5">
+      <span className="mt-0.5 text-red-600 dark:text-red-400">{icon}</span>
+      <div>
+        <h2 className="text-lg font-semibold">{title}</h2>
+        {subtitle && (
+          <p className="text-sm text-gray-600 dark:text-gray-400">{subtitle}</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function StockSection({ stock }: { stock: StockRow[] }) {
   const [state, formAction, pending] = useActionState(upsertStock, { error: null });
   const stockByType = new Map(stock.map((s) => [s.blood_type, s.units_available]));
 
   return (
     <section>
-      <h2 className="text-lg font-semibold">Your blood stock</h2>
-      <p className="text-sm text-gray-600 dark:text-gray-400">
-        Update available units per type. Setting units to 0 hides that type from other
-        hospitals&apos; matching feed.
-      </p>
-      <form action={formAction} className="mt-4 flex flex-wrap items-end gap-3">
+      <SectionHeading
+        icon={<Droplets size={20} />}
+        title="Your blood stock"
+        subtitle="Update available units per type. Setting units to 0 hides that type from other hospitals' matching feed."
+      />
+      <form action={formAction} className="flex flex-wrap items-end gap-3">
         <label className="flex flex-col gap-1 text-sm font-medium text-gray-700 dark:text-gray-200">
           Blood type
           <select name="blood_type" required className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2">
@@ -96,7 +126,7 @@ function StockSection({ stock }: { stock: StockRow[] }) {
         <button
           type="submit"
           disabled={pending}
-          className="rounded-md bg-red-600 px-4 py-2 font-medium text-white disabled:opacity-60"
+          className="cursor-pointer rounded-md bg-red-600 px-4 py-2 font-medium text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {pending ? "Saving…" : "Save"}
         </button>
@@ -104,15 +134,24 @@ function StockSection({ stock }: { stock: StockRow[] }) {
       {state.error && <p className="mt-2 text-sm text-red-700 dark:text-red-400">{state.error}</p>}
 
       <ul className="mt-4 grid grid-cols-4 gap-2 sm:grid-cols-8">
-        {BLOOD_TYPES.map((t) => (
-          <li
-            key={t}
-            className="rounded-md border border-gray-200 dark:border-gray-800 px-2 py-2 text-center text-sm"
-          >
-            <div className="font-semibold">{t}</div>
-            <div className="text-gray-500 dark:text-gray-400">{stockByType.get(t) ?? 0}</div>
-          </li>
-        ))}
+        {BLOOD_TYPES.map((t) => {
+          const units = stockByType.get(t) ?? 0;
+          return (
+            <li
+              key={t}
+              className={`rounded-md border px-2 py-2 text-center text-sm transition-colors ${
+                units > 0
+                  ? "border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/40"
+                  : "border-gray-200 dark:border-gray-800"
+              }`}
+            >
+              <div className="font-semibold">{t}</div>
+              <div className={units > 0 ? "text-red-700 dark:text-red-400 font-medium" : "text-gray-500 dark:text-gray-400"}>
+                {units}
+              </div>
+            </li>
+          );
+        })}
       </ul>
     </section>
   );
@@ -123,8 +162,8 @@ function CreateRequestSection() {
 
   return (
     <section>
-      <h2 className="text-lg font-semibold">Create a blood request</h2>
-      <form action={formAction} className="mt-4 flex flex-wrap items-end gap-3">
+      <SectionHeading icon={<PlusCircle size={20} />} title="Create a blood request" />
+      <form action={formAction} className="flex flex-wrap items-end gap-3">
         <label className="flex flex-col gap-1 text-sm font-medium text-gray-700 dark:text-gray-200">
           Blood type
           <select name="blood_type" required className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2">
@@ -154,7 +193,7 @@ function CreateRequestSection() {
         <button
           type="submit"
           disabled={pending}
-          className="rounded-md bg-red-600 px-4 py-2 font-medium text-white disabled:opacity-60"
+          className="cursor-pointer rounded-md bg-red-600 px-4 py-2 font-medium text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {pending ? "Posting…" : "Post request"}
         </button>
@@ -179,27 +218,34 @@ function MyRequestsSection({
 
   return (
     <section>
-      <h2 className="text-lg font-semibold">Your requests</h2>
+      <SectionHeading icon={<Users size={20} />} title="Your requests" />
       {myRequests.length === 0 && (
-        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">No requests posted yet.</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">No requests posted yet.</p>
       )}
-      <ul className="mt-4 flex flex-col gap-4">
+      <ul className="flex flex-col gap-4">
         {myRequests.map((req) => {
           const responses = responsesToMine.filter((r) => r.request_id === req.id);
           const pending = responses.filter((r) => r.status === "pending");
           return (
-            <li key={req.id} className="rounded-lg border border-gray-200 dark:border-gray-800 p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="font-semibold">{req.blood_type}</span>{" "}
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
-                    {req.units_fulfilled}/{req.units_needed} units · {req.urgency} · {req.status}
+            <li
+              key={req.id}
+              className="rounded-lg border border-gray-200 dark:border-gray-800 p-4 shadow-sm transition-shadow hover:shadow-md"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <BloodTypeBadge bloodType={req.blood_type} />
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    {req.units_fulfilled}/{req.units_needed} units
                   </span>
+                  <UrgencyBadge urgency={req.urgency} />
+                  <StatusBadge status={req.status} />
                 </div>
                 {req.status === "open" && (
                   <form action={cancelAction}>
                     <input type="hidden" name="request_id" value={req.id} />
-                    <button className="text-sm text-gray-500 dark:text-gray-400 underline">Cancel</button>
+                    <button className="cursor-pointer text-sm text-gray-500 dark:text-gray-400 underline hover:text-gray-700 dark:hover:text-gray-200">
+                      Cancel
+                    </button>
                   </form>
                 )}
               </div>
@@ -211,7 +257,7 @@ function MyRequestsSection({
                     return (
                       <li
                         key={resp.id}
-                        className="flex items-center justify-between rounded-md bg-gray-50 dark:bg-gray-900 px-3 py-2 text-sm"
+                        className="flex flex-wrap items-center justify-between gap-2 rounded-md bg-gray-50 dark:bg-gray-900 px-3 py-2 text-sm"
                       >
                         <span>
                           {resp.responder_type === "donor" ? "Donor" : "Hospital"}{" "}
@@ -221,13 +267,13 @@ function MyRequestsSection({
                         <span className="flex gap-2">
                           <form action={acceptAction}>
                             <input type="hidden" name="response_id" value={resp.id} />
-                            <button className="rounded-md bg-red-600 px-2 py-1 text-white">
+                            <button className="cursor-pointer rounded-md bg-red-600 px-2 py-1 text-white transition-colors hover:bg-red-700">
                               Accept
                             </button>
                           </form>
                           <form action={rejectAction}>
                             <input type="hidden" name="response_id" value={resp.id} />
-                            <button className="rounded-md border border-gray-300 dark:border-gray-700 px-2 py-1">
+                            <button className="cursor-pointer rounded-md border border-gray-300 dark:border-gray-700 px-2 py-1 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800">
                               Reject
                             </button>
                           </form>
@@ -265,14 +311,15 @@ function MatchingRequestsSection({
 
   return (
     <section>
-      <h2 className="text-lg font-semibold">Nearby hospitals in need</h2>
-      <p className="text-sm text-gray-600 dark:text-gray-400">
-        Open requests in your region matching a blood type you currently have in stock.
-      </p>
+      <SectionHeading
+        icon={<MapPinned size={20} />}
+        title="Nearby hospitals in need"
+        subtitle="Open requests in your region matching a blood type you currently have in stock."
+      />
       {matchingRequests.length === 0 && (
-        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">No matching requests right now.</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">No matching requests right now.</p>
       )}
-      <ul className="mt-4 flex flex-col gap-3">
+      <ul className="flex flex-col gap-3">
         {matchingRequests.map((req) => {
           const requester = profileById.get(req.hospital_id);
           const maxUnits = Math.min(
@@ -283,12 +330,15 @@ function MatchingRequestsSection({
           return (
             <li
               key={req.id}
-              className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-gray-200 dark:border-gray-800 p-4"
+              className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-gray-200 dark:border-gray-800 p-4 shadow-sm transition-shadow hover:shadow-md"
             >
-              <span>
-                <strong>{requester?.name ?? "A hospital"}</strong> needs{" "}
-                {req.units_needed - req.units_fulfilled} unit(s) of{" "}
-                <strong>{req.blood_type}</strong> ({req.urgency})
+              <span className="flex items-center gap-2">
+                <BloodTypeBadge bloodType={req.blood_type} />
+                <span>
+                  <strong>{requester?.name ?? "A hospital"}</strong> needs{" "}
+                  {req.units_needed - req.units_fulfilled} unit(s)
+                </span>
+                <UrgencyBadge urgency={req.urgency} />
               </span>
               {already ? (
                 <span className="text-sm text-gray-500 dark:text-gray-400">Response sent</span>
@@ -302,12 +352,12 @@ function MatchingRequestsSection({
                     max={maxUnits}
                     defaultValue={Math.min(1, maxUnits)}
                     required
-                    className="w-20 rounded-md border border-gray-300 dark:border-gray-700 px-2 py-1"
+                    className="w-20 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-2 py-1"
                   />
                   <button
                     type="submit"
                     disabled={pending}
-                    className="rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-60"
+                    className="cursor-pointer rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     Offer supply
                   </button>

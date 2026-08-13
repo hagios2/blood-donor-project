@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { BLOOD_TYPES, URGENCY_LEVELS } from "@/lib/constants";
+import { sendSms } from "@/lib/sms";
 
 export type ActionState = { error: string | null };
 
@@ -37,18 +38,42 @@ export async function createRequest(
     return { error: "Please select an urgency level." };
   }
 
-  const { error } = await supabase.from("blood_requests").insert({
-    hospital_id: user.id,
-    blood_type: bloodType,
-    units_needed: unitsNeeded,
-    urgency,
-    region: profile.region,
-    status: "open",
-  });
+  const { data: request, error } = await supabase
+    .from("blood_requests")
+    .insert({
+      hospital_id: user.id,
+      blood_type: bloodType,
+      units_needed: unitsNeeded,
+      urgency,
+      region: profile.region,
+      status: "open",
+    })
+    .select("id")
+    .single();
   if (error) return { error: error.message };
+
+  notifyMatchingTargets(supabase, request.id, bloodType, unitsNeeded, urgency);
 
   revalidatePath("/dashboard");
   return { error: null };
+}
+
+type NotificationTarget = { phone: string; name: string; kind: "donor" | "hospital" };
+
+async function notifyMatchingTargets(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  requestId: string,
+  bloodType: string,
+  unitsNeeded: number,
+  urgency: string,
+) {
+  const { data: targets } = await supabase.rpc("get_notification_targets", {
+    p_request_id: requestId,
+  });
+  const message = `BloodLink: URGENT need for ${unitsNeeded} unit(s) of ${bloodType} blood (${urgency}). Please log in to BloodLink to respond if you can help.`;
+  await Promise.all(
+    ((targets ?? []) as NotificationTarget[]).map((t) => sendSms(t.phone, message)),
+  );
 }
 
 export async function cancelRequest(
