@@ -61,7 +61,9 @@ export default function DonorDashboard({
           <div>
             <h2 className="text-lg font-semibold">Requests near you</h2>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Open requests in your region matching your blood type.
+              {matchingRequests.length >= 20
+                ? "Open requests matching your blood type. Showing the 20 most recent."
+                : "Open requests in your region matching your blood type."}
             </p>
           </div>
         </div>

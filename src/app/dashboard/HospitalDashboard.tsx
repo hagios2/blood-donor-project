@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { upsertStock } from "./stock-actions";
 import { createRequest, cancelRequest } from "./request-actions";
 import {
@@ -215,15 +215,43 @@ function MyRequestsSection({
   const [cancelState, cancelAction] = useActionState(cancelRequest, { error: null });
   const [acceptState, acceptAction] = useActionState(acceptResponse, { error: null });
   const [rejectState, rejectAction] = useActionState(rejectResponse, { error: null });
+  const [filter, setFilter] = useState<"all" | "open" | "fulfilled" | "cancelled">("all");
+
+  const filteredRequests =
+    filter === "all" ? myRequests : myRequests.filter((r) => r.status === filter);
 
   return (
     <section>
-      <SectionHeading icon={<Users size={20} />} title="Your requests" />
+      <SectionHeading
+        icon={<Users size={20} />}
+        title="Your requests"
+        subtitle={myRequests.length >= 20 ? "Showing your 20 most recent requests." : undefined}
+      />
+      {myRequests.length > 0 && (
+        <div className="mb-3 flex gap-2">
+          {(["all", "open", "fulfilled", "cancelled"] as const).map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`cursor-pointer rounded-full px-3 py-1 text-xs font-medium capitalize transition-colors ${
+                filter === f
+                  ? "bg-red-600 text-white"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
+              }`}
+            >
+              {f}
+            </button>
+          ))}
+        </div>
+      )}
       {myRequests.length === 0 && (
         <p className="text-sm text-gray-500 dark:text-gray-400">No requests posted yet.</p>
       )}
+      {myRequests.length > 0 && filteredRequests.length === 0 && (
+        <p className="text-sm text-gray-500 dark:text-gray-400">No {filter} requests.</p>
+      )}
       <ul className="flex flex-col gap-4">
-        {myRequests.map((req) => {
+        {filteredRequests.map((req) => {
           const responses = responsesToMine.filter((r) => r.request_id === req.id);
           const pending = responses.filter((r) => r.status === "pending");
           return (
@@ -314,7 +342,11 @@ function MatchingRequestsSection({
       <SectionHeading
         icon={<MapPinned size={20} />}
         title="Nearby hospitals in need"
-        subtitle="Open requests in your region matching a blood type you currently have in stock."
+        subtitle={
+          matchingRequests.length >= 20
+            ? "Open requests matching your stock, in your region. Showing the 20 most recent."
+            : "Open requests in your region matching a blood type you currently have in stock."
+        }
       />
       {matchingRequests.length === 0 && (
         <p className="text-sm text-gray-500 dark:text-gray-400">No matching requests right now.</p>

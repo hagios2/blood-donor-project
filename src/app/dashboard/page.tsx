@@ -40,7 +40,8 @@ export default async function DashboardPage() {
       .from("blood_requests")
       .select("*")
       .eq("hospital_id", user.id)
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .limit(20);
 
     const myRequestIds = (myRequests ?? []).map((r) => r.id);
     const { data: responsesToMine } = myRequestIds.length
@@ -49,6 +50,7 @@ export default async function DashboardPage() {
           .select("*")
           .in("request_id", myRequestIds)
           .order("created_at", { ascending: false })
+          .limit(100)
       : { data: [] as ResponseRow[] };
 
     const { data: openElsewhere } = await supabase
@@ -57,7 +59,8 @@ export default async function DashboardPage() {
       .eq("status", "open")
       .eq("region", profile.region)
       .neq("hospital_id", user.id)
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .limit(20);
 
     const { data: myHospitalResponses } = await supabase
       .from("responses")
@@ -119,14 +122,16 @@ export default async function DashboardPage() {
     .eq("status", "open")
     .eq("region", profile.region)
     .eq("blood_type", donorProfile?.blood_type ?? "")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(20);
 
   const { data: myResponses } = await supabase
     .from("responses")
     .select("*")
     .eq("responder_id", user.id)
     .eq("responder_type", "donor")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(20);
 
   const requesterIds = Array.from(
     new Set((matchingRequests ?? []).map((r) => r.hospital_id)),

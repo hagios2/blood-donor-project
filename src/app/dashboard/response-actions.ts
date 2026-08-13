@@ -40,8 +40,27 @@ export async function respondToRequest(
   });
   if (error) return { error: error.message };
 
+  notifyHospitalOfNewResponse(supabase, requestId, unitsOffered);
+
   revalidatePath("/dashboard");
   return { error: null };
+}
+
+type OwnerContact = { phone: string | null; name: string };
+
+async function notifyHospitalOfNewResponse(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  requestId: string,
+  unitsOffered: number,
+) {
+  const [{ data: owner }, { data: request }] = await Promise.all([
+    supabase.rpc("get_request_owner_contact", { p_request_id: requestId }).single<OwnerContact>(),
+    supabase.from("blood_requests").select("blood_type").eq("id", requestId).single(),
+  ]);
+  if (!owner) return;
+
+  const message = `BloodLink: Someone offered ${unitsOffered} unit(s) of ${request?.blood_type ?? ""} for your request. Log in to review and accept.`;
+  await sendSms(owner.phone, message);
 }
 
 export async function acceptResponse(

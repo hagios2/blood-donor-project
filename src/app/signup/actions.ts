@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { BLOOD_TYPES, GHANA_REGIONS } from "@/lib/constants";
+import { sendSms } from "@/lib/sms";
 
 export type ActionState = { error: string | null };
 
@@ -67,6 +68,11 @@ export async function signUp(
     });
     if (hospitalError) return { error: `Hospital profile failed: ${hospitalError.message}` };
   }
+
+  await sendSms(
+    phone,
+    `Welcome to BloodLink, ${name}! You're registered as a ${role}. We'll text you when there's an urgent match near you.`,
+  );
 
   redirect("/dashboard");
 }
