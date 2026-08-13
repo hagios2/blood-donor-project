@@ -11,8 +11,8 @@ export default async function Home() {
 
   return (
     <main className="flex flex-1 flex-col items-center justify-center px-6 py-24 text-center">
-      <h1 className="text-4xl font-bold text-red-700">BloodLink</h1>
-      <p className="mt-4 max-w-lg text-lg text-gray-600">
+      <h1 className="text-4xl font-bold text-red-700 dark:text-red-400">BloodLink</h1>
+      <p className="mt-4 max-w-lg text-lg text-gray-600 dark:text-gray-400">
         Urgent blood request matching between hospitals, donors, and nearby hospitals
         with surplus stock.
       </p>
@@ -25,7 +25,7 @@ export default async function Home() {
         </Link>
         <Link
           href="/login"
-          className="rounded-md border border-gray-300 px-6 py-3 font-medium text-gray-700"
+          className="rounded-md border border-gray-300 dark:border-gray-700 px-6 py-3 font-medium text-gray-700 dark:text-gray-200"
         >
           Log in
         </Link>

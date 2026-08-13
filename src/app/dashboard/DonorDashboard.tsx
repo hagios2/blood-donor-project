@@ -32,14 +32,14 @@ export default function DonorDashboard({
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-10">
       <section>
-        <h2 className="text-sm font-medium text-gray-500">Your donor profile</h2>
+        <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">Your donor profile</h2>
         <p className="text-lg font-semibold">Blood type: {bloodType}</p>
         {eligible ? (
-          <p className="mt-1 text-sm text-green-700">
+          <p className="mt-1 text-sm text-green-700 dark:text-green-400">
             You are eligible to donate now.
           </p>
         ) : (
-          <p className="mt-1 text-sm text-amber-700">
+          <p className="mt-1 text-sm text-amber-700 dark:text-amber-400">
             Not yet eligible — next eligible date:{" "}
             {nextDate?.toLocaleDateString()}
           </p>
@@ -48,11 +48,11 @@ export default function DonorDashboard({
 
       <section>
         <h2 className="text-lg font-semibold">Requests near you</h2>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-600 dark:text-gray-400">
           Open requests in your region matching your blood type.
         </p>
         {matchingRequests.length === 0 && (
-          <p className="mt-2 text-sm text-gray-500">No matching requests right now.</p>
+          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">No matching requests right now.</p>
         )}
         <ul className="mt-4 flex flex-col gap-3">
           {matchingRequests.map((req) => {
@@ -61,7 +61,7 @@ export default function DonorDashboard({
             return (
               <li
                 key={req.id}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-gray-200 p-4"
+                className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-gray-200 dark:border-gray-800 p-4"
               >
                 <span>
                   <strong>{requester?.name ?? "A hospital"}</strong> needs{" "}
@@ -69,7 +69,7 @@ export default function DonorDashboard({
                   <strong>{req.blood_type}</strong> ({req.urgency})
                 </span>
                 {already ? (
-                  <span className="text-sm text-gray-500">Response sent</span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">Response sent</span>
                 ) : eligible ? (
                   <form action={formAction}>
                     <input type="hidden" name="request_id" value={req.id} />
@@ -82,19 +82,19 @@ export default function DonorDashboard({
                     </button>
                   </form>
                 ) : (
-                  <span className="text-sm text-gray-400">Not yet eligible</span>
+                  <span className="text-sm text-gray-400 dark:text-gray-500">Not yet eligible</span>
                 )}
               </li>
             );
           })}
         </ul>
-        {state.error && <p className="mt-2 text-sm text-red-700">{state.error}</p>}
+        {state.error && <p className="mt-2 text-sm text-red-700 dark:text-red-400">{state.error}</p>}
       </section>
 
       <section>
         <h2 className="text-lg font-semibold">Your response history</h2>
         {myResponses.length === 0 && (
-          <p className="mt-2 text-sm text-gray-500">No responses yet.</p>
+          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">No responses yet.</p>
         )}
         <ul className="mt-4 flex flex-col gap-2">
           {myResponses.map((resp) => {
@@ -103,7 +103,7 @@ export default function DonorDashboard({
             return (
               <li
                 key={resp.id}
-                className="rounded-md border border-gray-200 px-3 py-2 text-sm"
+                className="rounded-md border border-gray-200 dark:border-gray-800 px-3 py-2 text-sm"
               >
                 {req?.blood_type ?? "Unknown"} to {requester?.name ?? "a hospital"} —{" "}
                 <span className="font-medium">{resp.status}</span>

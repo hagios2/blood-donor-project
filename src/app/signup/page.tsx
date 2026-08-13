@@ -11,17 +11,17 @@ export default function SignUpPage() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-12">
-      <h1 className="text-2xl font-semibold text-red-700">Create your BloodLink account</h1>
-      <p className="mt-1 text-sm text-gray-600">
+      <h1 className="text-2xl font-semibold text-red-700 dark:text-red-400">Create your BloodLink account</h1>
+      <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
         Register as a donor or a hospital to start matching urgent blood requests.
       </p>
 
-      <div className="mt-6 flex rounded-lg border border-gray-300 p-1">
+      <div className="mt-6 flex rounded-lg border border-gray-300 dark:border-gray-700 p-1">
         <button
           type="button"
           onClick={() => setRole("donor")}
           className={`flex-1 rounded-md py-2 text-sm font-medium ${
-            role === "donor" ? "bg-red-600 text-white" : "text-gray-600"
+            role === "donor" ? "bg-red-600 text-white" : "text-gray-600 dark:text-gray-400"
           }`}
         >
           I&apos;m a Donor
@@ -30,7 +30,7 @@ export default function SignUpPage() {
           type="button"
           onClick={() => setRole("hospital")}
           className={`flex-1 rounded-md py-2 text-sm font-medium ${
-            role === "hospital" ? "bg-red-600 text-white" : "text-gray-600"
+            role === "hospital" ? "bg-red-600 text-white" : "text-gray-600 dark:text-gray-400"
           }`}
         >
           I&apos;m a Hospital
@@ -50,9 +50,9 @@ export default function SignUpPage() {
         />
         <Field label="Phone" name="phone" type="tel" />
 
-        <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
+        <label className="flex flex-col gap-1 text-sm font-medium text-gray-700 dark:text-gray-200">
           Region
-          <select name="region" required className="rounded-md border border-gray-300 px-3 py-2">
+          <select name="region" required className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2">
             <option value="">Select a region</option>
             {GHANA_REGIONS.map((r) => (
               <option key={r} value={r}>{r}</option>
@@ -61,9 +61,9 @@ export default function SignUpPage() {
         </label>
 
         {role === "donor" ? (
-          <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
+          <label className="flex flex-col gap-1 text-sm font-medium text-gray-700 dark:text-gray-200">
             Blood type
-            <select name="blood_type" required className="rounded-md border border-gray-300 px-3 py-2">
+            <select name="blood_type" required className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2">
               <option value="">Select blood type</option>
               {BLOOD_TYPES.map((t) => (
                 <option key={t} value={t}>{t}</option>
@@ -75,7 +75,7 @@ export default function SignUpPage() {
         )}
 
         {state.error && (
-          <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{state.error}</p>
+          <p className="rounded-md bg-red-50 dark:bg-red-950 px-3 py-2 text-sm text-red-700 dark:text-red-400">{state.error}</p>
         )}
 
         <button
@@ -87,9 +87,9 @@ export default function SignUpPage() {
         </button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-gray-600">
+      <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
         Already have an account?{" "}
-        <Link href="/login" className="font-medium text-red-700 underline">
+        <Link href="/login" className="font-medium text-red-700 dark:text-red-400 underline">
           Log in
         </Link>
       </p>
@@ -111,14 +111,14 @@ function Field({
   minLength?: number;
 }) {
   return (
-    <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
+    <label className="flex flex-col gap-1 text-sm font-medium text-gray-700 dark:text-gray-200">
       {label}
       <input
         name={name}
         type={type}
         required={required}
         minLength={minLength}
-        className="rounded-md border border-gray-300 px-3 py-2 font-normal"
+        className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 font-normal"
       />
     </label>
   );
