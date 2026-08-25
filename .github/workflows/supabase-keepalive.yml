@@ -1,9 +1,15 @@
 name: Supabase keep-alive
 
+# Supabase's own docs say "a few user requests to the database each day over
+# the previous week" is what prevents free-tier pausing. An earlier version
+# of this workflow only pinged every 3 days, which was NOT frequent enough:
+# the project was paused anyway (confirmed 2026-08-25). Ping three times a
+# day instead, spaced out, as a safety margin above "a few."
 on:
   schedule:
-    # Every 3 days — well inside Supabase's 7-day free-tier inactivity window
-    - cron: "17 6 */3 * *"
+    - cron: "12 2 * * *"
+    - cron: "34 10 * * *"
+    - cron: "56 18 * * *"
   workflow_dispatch: {}
 
 jobs:
@@ -14,5 +20,6 @@ jobs:
         run: |
           curl -sf "https://utsfoobmgmhsrhxjsslr.supabase.co/rest/v1/profiles_public?select=id&limit=1" \
             -H "apikey: sb_publishable_oHQfGfW1MMJdGz2vnw2c8w_lTTn8s0F" \
+            -H "Authorization: Bearer sb_publishable_oHQfGfW1MMJdGz2vnw2c8w_lTTn8s0F" \
             -o /dev/null
           echo "Pinged Supabase project to prevent free-tier auto-pause."
