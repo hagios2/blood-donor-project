@@ -88,10 +88,7 @@ export default async function DashboardPage() {
       new Set([...responderIds, ...otherHospitalIds]),
     );
     const { data: publicProfiles } = allProfileIds.length
-      ? await supabase
-          .from("profiles_public")
-          .select("*")
-          .in("id", allProfileIds)
+      ? await supabase.rpc("get_public_profiles", { p_ids: allProfileIds })
       : { data: [] as PublicProfile[] };
 
     return (
@@ -151,7 +148,7 @@ export default async function DashboardPage() {
 
   const allIds = Array.from(new Set([...requesterIds, ...historyRequesterIds]));
   const { data: publicProfiles } = allIds.length
-    ? await supabase.from("profiles_public").select("*").in("id", allIds)
+    ? await supabase.rpc("get_public_profiles", { p_ids: allIds })
     : { data: [] as PublicProfile[] };
 
   const alreadyRespondedIds = new Set(

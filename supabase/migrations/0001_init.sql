@@ -13,6 +13,7 @@ create table profiles (
 );
 
 -- public-safe view: never exposes phone/email
+-- (superseded by get_public_profiles() in 0004 — this view bypassed RLS)
 create view profiles_public as
   select id, name, region, role from profiles;
 

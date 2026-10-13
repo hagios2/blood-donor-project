@@ -18,7 +18,8 @@ jobs:
     steps:
       - name: Ping Supabase REST API
         run: |
-          curl -sf "https://utsfoobmgmhsrhxjsslr.supabase.co/rest/v1/profiles_public?select=id&limit=1" \
+          curl -sf -X POST "https://utsfoobmgmhsrhxjsslr.supabase.co/rest/v1/rpc/keepalive" \
+            -H "Content-Type: application/json" -d '{}' \
             -H "apikey: sb_publishable_oHQfGfW1MMJdGz2vnw2c8w_lTTn8s0F" \
             -H "Authorization: Bearer sb_publishable_oHQfGfW1MMJdGz2vnw2c8w_lTTn8s0F" \
             -o /dev/null
